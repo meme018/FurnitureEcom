@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router";
+import { Route, Routes, useLocation } from "react-router";
 import Home from "./pages/Home";
 import Navbar from "./components/navbar";
 import Shop from "./pages/Shop";
@@ -9,14 +9,35 @@ import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 import Cart from "./pages/Cart";
 import CheckOut from "./pages/CheckOut";
-import AddProduct from "./Admin/AddProduct";
-import CreateBlog from "./Admin/CreateBlog";
 import Dashboard from "./Admin/Dashboard";
+
+// Create a component to handle footer visibility
+const FooterHandler = () => {
+  const location = useLocation();
+  const noFooterPaths = ["/Dashboard"];
+
+  return (
+    !noFooterPaths.some((path) => location.pathname.startsWith(path)) && (
+      <Footer />
+    )
+  );
+};
+
+const NavbarHandler = () => {
+  const location = useLocation();
+  const noNavbarPaths = ["/Dashboard"];
+
+  return (
+    !noNavbarPaths.some((path) => location.pathname.startsWith(path)) && (
+      <Navbar />
+    )
+  );
+};
 
 function App() {
   return (
     <>
-      <Navbar />
+      <NavbarHandler />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop />} />
@@ -31,7 +52,7 @@ function App() {
         {/* Admin Routes */}
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
-      <Footer />
+      <FooterHandler />
     </>
   );
 }

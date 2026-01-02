@@ -62,6 +62,14 @@ const Registration = () => {
           <h2 className="text-2xl font-semibold mb-8">Register</h2>
 
           <div className="mb-6">
+            <label className="block text-lg mb-2">Username</label>
+            <input
+              type="name"
+              className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
+            />
+          </div>
+
+          <div className="mb-6">
             <label className="block text-lg mb-2">Email address</label>
             <input
               type="email"
@@ -69,9 +77,22 @@ const Registration = () => {
             />
           </div>
 
-          <p className="text-lg text-gray-600 mb-4">
-            A link to set a new password will be sent to your email address.
-          </p>
+          <div className="mb-6">
+            <label className="block text-lg mb-2">Password</label>
+            <input
+              type="password"
+              className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-lg mb-2">Role</label>
+            <select className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black">
+              <option value="">Select Role</option>
+              <option value="customer">Customer</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
 
           <p className="text-lg text-gray-600 mb-8">
             Your personal data will be used to support your experience

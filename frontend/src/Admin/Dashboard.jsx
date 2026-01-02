@@ -14,8 +14,8 @@ const Dashboard = () => {
     setValue(newValue);
   };
   return (
-    <div className="flex flex-col min-h-screen mt-20">
-      <p className="text-center text-3xl font-bold p-5">Dashboard</p>
+    <div className="flex flex-col min-h-screen mt-10">
+      <p className="text-center text-3xl font-bold p-5">Admin Dashboard</p>
       <Box sx={{ width: "100%", typography: "body1" }}>
         <TabContext value={value}>
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
