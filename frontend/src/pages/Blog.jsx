@@ -3,6 +3,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import PersonIcon from "@mui/icons-material/Person";
 import SearchIcon from "@mui/icons-material/Search";
+import { Link } from "react-router";
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -128,7 +129,7 @@ const Blog = () => {
                 </p>
 
                 <button className="text-gray-900 font-medium border-b-2 border-gray-900 pb-1 hover:text-gray-700">
-                  Read more
+                  <Link to="/singleBlog">Read more</Link>
                 </button>
               </article>
             ))}

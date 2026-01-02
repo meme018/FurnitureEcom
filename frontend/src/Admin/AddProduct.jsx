@@ -1,5 +1,6 @@
 import { useState } from "react";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const AddProduct = () => {
   const [productData, setProductData] = useState({
@@ -11,27 +12,18 @@ const AddProduct = () => {
     tags: "",
     stock: "",
     sizes: [],
-    colors: [],
+    colors: [], // store hex codes
   });
 
   const [images, setImages] = useState([]);
+  const [customColor, setCustomColor] = useState("#000000");
 
   const availableSizes = ["XS", "S", "M", "L", "XL", "XXL"];
-  const availableColors = [
-    { name: "Purple", hex: "#9333ea" },
-    { name: "Black", hex: "#000000" },
-    { name: "Gold", hex: "#ca8a04" },
-    { name: "Blue", hex: "#3b82f6" },
-    { name: "Red", hex: "#ef4444" },
-    { name: "Green", hex: "#22c55e" },
-  ];
 
+  /* -------------------- Handlers -------------------- */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProductData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setProductData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleImageUpload = (e) => {
@@ -56,12 +48,24 @@ const AddProduct = () => {
     }));
   };
 
-  const toggleColor = (color) => {
+  const addCustomColor = () => {
+    if (!/^#[0-9A-Fa-f]{6}$/.test(customColor)) {
+      alert("Enter a valid hex color (e.g. #ff5733)");
+      return;
+    }
+
     setProductData((prev) => ({
       ...prev,
-      colors: prev.colors.includes(color.name)
-        ? prev.colors.filter((c) => c !== color.name)
-        : [...prev.colors, color.name],
+      colors: prev.colors.includes(customColor)
+        ? prev.colors
+        : [...prev.colors, customColor],
+    }));
+  };
+
+  const removeColor = (hex) => {
+    setProductData((prev) => ({
+      ...prev,
+      colors: prev.colors.filter((c) => c !== hex),
     }));
   };
 
@@ -77,11 +81,13 @@ const AddProduct = () => {
       alert("Please fill in all required fields");
       return;
     }
+
     console.log("Product Data:", productData);
     console.log("Images:", images);
     alert("Product added successfully!");
   };
 
+  /* -------------------- UI -------------------- */
   return (
     <div className="flex flex-col min-h-screen">
       <div className="px-8 py-10 flex flex-col gap-6 items-center">
@@ -89,12 +95,11 @@ const AddProduct = () => {
 
         <div className="w-full max-w-6xl">
           <div className="flex flex-col lg:flex-row gap-10">
-            {/* Left Column - Images */}
+            {/* Product Details */}
             <div className="flex-1">
               <h2 className="text-2xl font-semibold mb-6">Product Images</h2>
 
-              {/* Image Upload Area */}
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6 hover:border-gray-400 transition">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
                 <input
                   type="file"
                   id="image-upload"
@@ -108,210 +113,182 @@ const AddProduct = () => {
                   className="cursor-pointer flex flex-col items-center"
                 >
                   <CloudUploadIcon className="w-16 h-16 text-gray-400 mb-4" />
-                  <p className="text-lg font-medium mb-2">
-                    Click to upload images
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    or drag and drop PNG, JPG up to 10MB
-                  </p>
+                  <p className="text-lg font-medium">Click to upload images</p>
                 </label>
               </div>
 
-              {/* Image Preview Flex */}
               {images.length > 0 && (
                 <div className="flex flex-wrap gap-4">
                   {images.map((img, index) => (
-                    <div key={index} className="relative group shrink-0">
-                      <div className="w-24 h-24 bg-amber-50 rounded-lg overflow-hidden">
-                        <img
-                          src={img.preview}
-                          alt={`Preview ${index}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                    <div key={index} className="relative group">
+                      <img
+                        src={img.preview}
+                        alt="preview"
+                        className="w-24 h-24 object-cover rounded-lg"
+                      />
                       <button
                         onClick={() => removeImage(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <DeleteIcon size={14} />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
 
-            {/* Right Column - Product Details */}
-            <div className="flex-1">
               <h2 className="text-2xl font-semibold mb-6">Product Details</h2>
 
               <div className="flex flex-col gap-6">
-                {/* Product Name */}
-                <div>
-                  <label className="block font-medium mb-2">
-                    Product Name*
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={productData.name}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-md px-4 py-3 focus:outline-none focus:border-black"
-                    placeholder="Enter product name"
-                  />
-                </div>
+                <input
+                  name="name"
+                  value={productData.name}
+                  onChange={handleInputChange}
+                  placeholder="Product Name*"
+                  className="border px-4 py-3 rounded-md"
+                />
 
-                {/* Price */}
-                <div>
-                  <label className="block font-medium mb-2">Price (Rs.)*</label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={productData.price}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-md px-4 py-3 focus:outline-none focus:border-black"
-                    placeholder="250000.00"
-                  />
-                </div>
+                <input
+                  type="number"
+                  name="price"
+                  value={productData.price}
+                  onChange={handleInputChange}
+                  placeholder="Price (Rs.)*"
+                  className="border px-4 py-3 rounded-md"
+                />
 
-                {/* SKU */}
-                <div>
-                  <label className="block font-medium mb-2">SKU*</label>
-                  <input
-                    type="text"
-                    name="sku"
-                    value={productData.sku}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-md px-4 py-3 focus:outline-none focus:border-black"
-                    placeholder="SS001"
-                  />
-                </div>
+                <input
+                  name="sku"
+                  value={productData.sku}
+                  onChange={handleInputChange}
+                  placeholder="SKU*"
+                  className="border px-4 py-3 rounded-md"
+                />
 
-                {/* Category */}
-                <div>
-                  <label className="block font-medium mb-2">Category*</label>
-                  <select
-                    name="category"
-                    value={productData.category}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-md px-4 py-3 focus:outline-none focus:border-black"
-                  >
-                    <option value="">Select category</option>
-                    <option value="Sofas">Sofas</option>
-                    <option value="Chairs">Chairs</option>
-                    <option value="Tables">Tables</option>
-                    <option value="Beds">Beds</option>
-                    <option value="Storage">Storage</option>
-                  </select>
-                </div>
+                <select
+                  name="category"
+                  value={productData.category}
+                  onChange={handleInputChange}
+                  className="border px-4 py-3 rounded-md"
+                >
+                  <option value="">Select category</option>
+                  <option>Sofas</option>
+                  <option>Chairs</option>
+                  <option>Tables</option>
+                  <option>Beds</option>
+                </select>
 
-                {/* Stock */}
-                <div>
-                  <label className="block font-medium mb-2">
-                    Stock Quantity*
-                  </label>
-                  <input
-                    type="number"
-                    name="stock"
-                    value={productData.stock}
-                    onChange={handleInputChange}
-                    className="w-full border rounded-md px-4 py-3 focus:outline-none focus:border-black"
-                    placeholder="100"
-                  />
-                </div>
+                <input
+                  type="number"
+                  name="stock"
+                  value={productData.stock}
+                  onChange={handleInputChange}
+                  placeholder="Stock Quantity*"
+                  className="border px-4 py-3 rounded-md"
+                />
               </div>
             </div>
           </div>
 
-          {/* Full Width Sections */}
-          <div className="mt-10 flex flex-col gap-8">
-            {/* Description */}
-            <div>
-              <label className="block font-medium mb-2 text-xl">
-                Description*
-              </label>
-              <textarea
-                name="description"
-                value={productData.description}
-                onChange={handleInputChange}
-                rows="6"
-                className="w-full border rounded-md px-4 py-3 focus:outline-none focus:border-black"
-                placeholder="Enter detailed product description..."
-              />
-            </div>
+          {/* Description */}
+          <div className="mt-10">
+            <textarea
+              name="description"
+              value={productData.description}
+              onChange={handleInputChange}
+              rows="6"
+              placeholder="Product description*"
+              className="w-full border px-4 py-3 rounded-md"
+            />
+          </div>
 
-            {/* Sizes */}
-            <div>
-              <label className="block font-medium mb-3 text-xl">
-                Available Sizes
-              </label>
-              <div className="flex gap-3 flex-wrap">
-                {availableSizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => toggleSize(size)}
-                    className={`border px-6 py-3 rounded-md text-sm transition ${
-                      productData.sizes.includes(size)
-                        ? "bg-black text-white border-black"
-                        : "hover:border-black"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
+          {/* Sizes */}
+          <div className="mt-8">
+            <h3 className="text-xl font-medium mb-3">Available Sizes</h3>
+            <div className="flex gap-3 flex-wrap">
+              {availableSizes.map((size) => (
+                <button
+                  key={size}
+                  onClick={() => toggleSize(size)}
+                  className={`px-6 py-3 border rounded-md ${
+                    productData.sizes.includes(size)
+                      ? "bg-black text-white"
+                      : ""
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
             </div>
+          </div>
 
-            {/* Colors */}
-            <div>
-              <label className="block font-medium mb-3 text-xl">
-                Available Colors
-              </label>
-              <div className="flex gap-4 flex-wrap">
-                {availableColors.map((color) => (
-                  <button
-                    key={color.name}
-                    onClick={() => toggleColor(color)}
-                    className={`relative w-12 h-12 rounded-full transition ${
-                      productData.colors.includes(color.name)
-                        ? "ring-4 ring-offset-2 ring-black"
-                        : ""
-                    }`}
-                    style={{ backgroundColor: color.hex }}
-                    title={color.name}
+          {/* Colors */}
+          <div className="mt-8">
+            <h3 className="text-xl font-medium mb-3">Available Colors</h3>
+
+            {/* Selected Colors */}
+            <div className="flex gap-4 flex-wrap mb-4">
+              {productData.colors.map((hex) => (
+                <div key={hex} className="relative group">
+                  <div
+                    className="w-12 h-12 rounded-full ring-2 ring-black"
+                    style={{ backgroundColor: hex }}
+                    title={hex}
                   />
-                ))}
-              </div>
+                  <button
+                    onClick={() => removeColor(hex)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
             </div>
 
-            {/* Tags */}
-            <div>
-              <label className="block font-medium mb-2 text-xl">Tags</label>
+            {/* Color Input */}
+            <div className="flex items-center gap-4">
+              <input
+                type="color"
+                value={customColor}
+                onChange={(e) => setCustomColor(e.target.value)}
+                className="w-14 h-14"
+              />
               <input
                 type="text"
-                name="tags"
-                value={productData.tags}
-                onChange={handleInputChange}
-                className="w-full border rounded-md px-4 py-3 focus:outline-none focus:border-black"
-                placeholder="Sofa, Chair, Home, Shop (comma separated)"
+                value={customColor}
+                onChange={(e) => setCustomColor(e.target.value)}
+                className="border px-4 py-3 rounded-md w-40"
+                placeholder="#000000"
               />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-6 pt-6">
               <button
-                onClick={handleSubmit}
-                className="bg-black text-white px-12 py-4 rounded-md hover:bg-gray-800 transition text-lg font-medium"
+                onClick={addCustomColor}
+                className="border px-6 py-3 rounded-md hover:bg-black hover:text-white"
               >
-                Add Product
-              </button>
-              <button className="border border-black px-12 py-4 rounded-md hover:bg-gray-100 transition text-lg font-medium">
-                Save as Draft
-              </button>
-              <button className="border px-12 py-4 rounded-md hover:bg-gray-100 transition text-lg font-medium flex items-center gap-2">
-                Cancel
+                Add Color
               </button>
             </div>
+          </div>
+
+          {/* Tags */}
+          <div className="mt-8">
+            <input
+              name="tags"
+              value={productData.tags}
+              onChange={handleInputChange}
+              placeholder="Tags (comma separated)"
+              className="w-full border px-4 py-3 rounded-md"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="mt-10 flex gap-6">
+            <button
+              onClick={handleSubmit}
+              className="bg-black text-white px-12 py-4 rounded-md"
+            >
+              Add Product
+            </button>
+            <button className="border px-12 py-4 rounded-md">Cancel</button>
           </div>
         </div>
       </div>

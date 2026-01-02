@@ -10,11 +10,14 @@ import Contact from "./pages/Contact";
 import Cart from "./pages/Cart";
 import CheckOut from "./pages/CheckOut";
 import Dashboard from "./Admin/Dashboard";
+import SingleBlog from "./pages/SingleBlog";
+import EditProduct from "./Admin/EditProduct";
+import EditBlog from "./Admin/EditBlog";
 
 // Create a component to handle footer visibility
 const FooterHandler = () => {
   const location = useLocation();
-  const noFooterPaths = ["/Dashboard"];
+  const noFooterPaths = ["/Dashboard", "/editProduct"];
 
   return (
     !noFooterPaths.some((path) => location.pathname.startsWith(path)) && (
@@ -25,7 +28,7 @@ const FooterHandler = () => {
 
 const NavbarHandler = () => {
   const location = useLocation();
-  const noNavbarPaths = ["/Dashboard"];
+  const noNavbarPaths = ["/Dashboard", "/editProduct", "/editBlog"];
 
   return (
     !noNavbarPaths.some((path) => location.pathname.startsWith(path)) && (
@@ -48,9 +51,12 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<CheckOut />} />
         <Route path="/singleProduct" element={<SingleProduct />} />
+        <Route path="/singleBlog" element={<SingleBlog />} />
 
         {/* Admin Routes */}
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/editProduct" element={<EditProduct />} />
+        <Route path="/editBlog" element={<EditBlog />} />
       </Routes>
       <FooterHandler />
     </>

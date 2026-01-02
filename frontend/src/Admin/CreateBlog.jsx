@@ -4,7 +4,7 @@ import AddIcon from "@mui/icons-material/Add";
 const CreateBlog = () => {
   const [formData, setFormData] = useState({
     title: "",
-    excerpt: "",
+    Description: "",
     image: "",
     author: "Admin",
     category: "Handmade",
@@ -15,7 +15,7 @@ const CreateBlog = () => {
   const categories = ["Crafts", "Design", "Handmade", "Interior", "Wood"];
 
   const handleSubmit = () => {
-    if (!formData.title || !formData.excerpt || !formData.image) {
+    if (!formData.title || !formData.Description || !formData.image) {
       alert("Please fill in all required fields");
       return;
     }
@@ -34,7 +34,7 @@ const CreateBlog = () => {
 
     setFormData({
       title: "",
-      excerpt: "",
+      Description: "",
       image: "",
       author: "Admin",
       category: "Handmade",
@@ -74,15 +74,15 @@ const CreateBlog = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Excerpt *
+                Description *
               </label>
               <textarea
-                value={formData.excerpt}
+                value={formData.Description}
                 onChange={(e) =>
-                  setFormData({ ...formData, excerpt: e.target.value })
+                  setFormData({ ...formData, Description: e.target.value })
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
-                placeholder="Enter post excerpt"
+                placeholder="Enter post Description"
                 rows="5"
               />
             </div>

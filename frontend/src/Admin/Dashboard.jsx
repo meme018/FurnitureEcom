@@ -6,6 +6,8 @@ import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import AddProduct from "./AddProduct";
 import CreateBlog from "./CreateBlog";
+import ProductListing from "./ProductListing";
+import BlogListing from "./BlogListing";
 
 const Dashboard = () => {
   const [value, setValue] = React.useState("1");
@@ -26,6 +28,8 @@ const Dashboard = () => {
             >
               <Tab label="Add Product" value="1" />
               <Tab label="Create Blog" value="2" />
+              <Tab label="Product Listing" value="3" />
+              <Tab label="Blog Listing" value="4" />
             </TabList>
           </Box>
           <TabPanel value="1">
@@ -33,6 +37,12 @@ const Dashboard = () => {
           </TabPanel>
           <TabPanel value="2">
             <CreateBlog />
+          </TabPanel>
+          <TabPanel value="3">
+            <ProductListing />
+          </TabPanel>
+          <TabPanel value="4">
+            <BlogListing />
           </TabPanel>
         </TabContext>
       </Box>

@@ -7,7 +7,7 @@ const CheckOut = () => {
     <div className="flex flex-col min-h-screen pt-25">
       <div
         className="flex flex-col w-auto h-80 mx-10 gap-8 bg-[url('https://plus.unsplash.com/premium_photo-1661766077694-6e3750b0fb97?q=80&w=1931&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')]
-       bg-center bg-no-repeat bg-cover rounded-3xl mb-10 bg-transparent flex items-center justify-center"
+       bg-center bg-no-repeat bg-cover rounded-3xl mb-10 bg-transparent items-center justify-center"
       >
         <p className="text-4xl font-semibold">Checkout</p>
         <p>

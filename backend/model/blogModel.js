@@ -8,11 +8,11 @@ const blogSchema = new mongoose.Schema(
       trim: true,
       maxlength: [200, "Title cannot exceed 200 characters"],
     },
-    excerpt: {
+    description: {
       type: String,
-      required: [true, "Excerpt is required"],
+      required: [true, "Description is required"],
       trim: true,
-      maxlength: [500, "Excerpt cannot exceed 500 characters"],
+      maxlength: [500, "Description cannot exceed 500 characters"],
     },
     image: {
       type: String,
@@ -41,6 +41,4 @@ const blogSchema = new mongoose.Schema(
   }
 );
 
-const Blog = mongoose.model("Blog", blogSchema);
-
-module.exports = Blog;
+module.exports = mongoose.model("Blog", blogSchema);
