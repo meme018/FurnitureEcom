@@ -48,6 +48,16 @@ const Shop = () => {
           </div>
         </div>
       </div>
+      <div className="bg-gray-50 rounded-lg p-6 mb-8">
+        <div className="relative">
+          <SearchIcon className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search by name or SKU..."
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 mx-10 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
         {/* {products.map((product) => (
