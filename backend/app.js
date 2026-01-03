@@ -21,7 +21,7 @@ const {
 
 const corsOptions = {
   origin: "http://localhost:3000",
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
   optionsSuccessStatus: 200,
@@ -52,4 +52,6 @@ app.delete("/api/blogs/:id", deleteBlogById);
 
 app.listen(process.env.PORT, () => {
   console.log(`server started on port ${process.env.PORT}`);
+  console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
+  console.log("JWT_SECRET length:", process.env.JWT_SECRET?.length);
 });

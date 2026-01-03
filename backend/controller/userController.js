@@ -4,7 +4,16 @@ const jwt = require("jsonwebtoken");
 // Create a new user
 exports.createUser = async (req, res) => {
   try {
+    console.log("Registration request body:", req.body); // Debug log
+
     const { userName, email, password, role } = req.body;
+
+    // Validate required fields
+    if (!userName || !email || !password) {
+      return res.status(400).json({
+        message: "Please provide userName, email, and password",
+      });
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -17,7 +26,25 @@ exports.createUser = async (req, res) => {
       });
     }
 
-    const newUser = await User.create({ userName, email, password, role });
+    // Set default role if not provided
+    const userRole = role || "customer";
+
+    const newUser = await User.create({
+      userName,
+      email,
+      password,
+      role: userRole,
+    });
+
+    console.log("User created successfully:", newUser._id); // Debug log
+
+    // Check if JWT_SECRET exists
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not defined in environment variables");
+      return res.status(500).json({
+        message: "Server configuration error",
+      });
+    }
 
     // Generate JWT token for immediate login after registration
     const token = jwt.sign(
@@ -40,13 +67,20 @@ exports.createUser = async (req, res) => {
       data: userResponse,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
+    console.error("Registration error:", error); // Debug log
+    res.status(500).json({
+      message: "Server Error",
+      error: error.message,
+      details: error.toString(),
+    });
   }
 };
 
 // User login
 exports.loginUser = async (req, res) => {
   try {
+    console.log("Login request body:", req.body); // Debug log
+
     const { userOrEmail, password } = req.body;
 
     if (!userOrEmail || !password) {
@@ -59,14 +93,26 @@ exports.loginUser = async (req, res) => {
       $or: [{ userName: userOrEmail }, { email: userOrEmail }],
     });
 
+    console.log("User found:", user ? user._id : "not found"); // Debug log
+
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const isPasswordValid = await user.comparePassword(password);
 
+    console.log("Password valid:", isPasswordValid); // Debug log
+
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Check if JWT_SECRET exists
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not defined in environment variables");
+      return res.status(500).json({
+        message: "Server configuration error",
+      });
     }
 
     // Generate JWT token
@@ -87,6 +133,11 @@ exports.loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
+    console.error("Login error:", error); // Debug log
+    res.status(500).json({
+      message: "Server Error",
+      error: error.message,
+      details: error.toString(),
+    });
   }
 };
