@@ -19,6 +19,13 @@ exports.createUser = async (req, res) => {
 
     const newUser = await User.create({ userName, email, password, role });
 
+    // Generate JWT token for immediate login after registration
+    const token = jwt.sign(
+      { userId: newUser._id, role: newUser.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
     // Don't send password back
     const userResponse = {
       _id: newUser._id,
@@ -29,6 +36,7 @@ exports.createUser = async (req, res) => {
 
     res.status(201).json({
       message: "User created successfully",
+      token,
       data: userResponse,
     });
   } catch (error) {

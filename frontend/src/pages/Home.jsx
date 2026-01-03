@@ -6,9 +6,16 @@ import Newarrival from "../assets/nA.png";
 import ProductCard from "../components/ProductCard";
 import BlogCard from "../components/BlogCard";
 import { Link } from "react-router";
-import { Button } from "@mui/material";
+import { useGetBlogsQuery } from "../services/blogApi";
+import { useGetProductQuery } from "../services/productApi";
 
 const Home = () => {
+  const { data: blogsData, isLoading, isError } = useGetBlogsQuery();
+  const blogs = blogsData?.data || [];
+
+  const { data, error } = useGetProductQuery();
+  const products = data?.data || [];
+
   return (
     <>
       <div className="flex flex-row min-h-screen gap-40 bg-[#fbebb5] pt-20 justify-center items-center">
@@ -50,11 +57,20 @@ const Home = () => {
           Find a bright ideal to suit your taste with our great selection of
           suspension, floor and table lights.
         </p>
+
+        {isError && (
+          <div className="flex justify-center items-center h-64">
+            <p className="text-xl text-red-600">
+              Error loading products:{" "}
+              {error?.message || "Please try again later"}
+            </p>
+          </div>
+        )}
+
         <div className="px-20 py-10 grid grid-cols-4 gap-10">
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
+          {products.slice(0, 4).map((product) => (
+            <ProductCard key={product._id} product={product} />
+          ))}
         </div>
         <Link to="/Shop" className="text-2xl underline underline-offset-8">
           View More{" "}
@@ -72,16 +88,34 @@ const Home = () => {
         </div>
       </div>
 
-      {/* blog */}
-      <div className="flex flex-col items-center justify-center">
-        <div className="grid grid-cols-3 gap-20 p-20">
-          <BlogCard />
-          <BlogCard />
-          <BlogCard />
-        </div>
+      {/* blog section */}
+      <div className="flex flex-col items-center justify-center py-20">
+        <h2 className="text-4xl font-semibold mb-4">Our Blogs</h2>
+        <p className="text-center text-lg px-60 text-gray-500 mb-10">
+          Find inspiration and tips for your home
+        </p>
+
+        {isLoading ? (
+          <p className="text-gray-500">Loading blogs...</p>
+        ) : isError ? (
+          <p className="text-red-500">Error loading blogs</p>
+        ) : (
+          <div className="grid grid-cols-3 gap-20 px-20">
+            {blogs.slice(0, 3).map((blog) => (
+              <BlogCard key={blog._id} blog={blog} />
+            ))}
+          </div>
+        )}
+
+        <Link
+          to="/blog"
+          className="text-2xl underline underline-offset-8 mt-10"
+        >
+          View All Posts
+        </Link>
       </div>
 
-      <div className="flex flex-col items-center justify-center h-70 text-center bg-amber-100/60 backdrop-blur-md px-14 py-10 rounded-2xl">
+      <div className="flex flex-col items-center justify-center h-70 text-center bg-amber-100/60 backdrop-blur-md px-14 py-10 rounded-2xl my-20 mx-20">
         <h1 className="text-4xl font-bold mb-2">Our Instagram</h1>
         <p className="text-gray-600 mb-6">Follow our store on Instagram</p>
 

@@ -1,7 +1,119 @@
+import React, { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
-import { Link } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
+import {
+  useGetBlogByIdQuery,
+  useUpdateBlogMutation,
+} from "../services/blogApi";
 
 const EditBlog = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const {
+    data: blogData,
+    isLoading: isFetching,
+    isError: fetchError,
+  } = useGetBlogByIdQuery(id);
+  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
+
+  const blog = blogData?.data;
+
+  const [formData, setFormData] = useState({
+    title: blog?.title || "",
+    description: blog?.description || "",
+    image: blog?.image || "",
+    author: blog?.author || "",
+    category: blog?.category || "Handmade",
+  });
+
+  const [errors, setErrors] = useState({});
+
+  const categories = ["Crafts", "Design", "Handmade", "Interior", "Wood"];
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = "Title is required";
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    }
+
+    if (!formData.image.trim()) {
+      newErrors.image = "Image URL is required";
+    } else if (!isValidUrl(formData.image)) {
+      newErrors.image = "Please enter a valid URL";
+    }
+
+    if (!formData.author.trim()) {
+      newErrors.author = "Author name is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      await updateBlog({
+        id,
+        ...formData,
+        date: new Date().toISOString(),
+      }).unwrap();
+
+      alert("Blog post updated successfully!");
+      navigate("/Dashboard");
+    } catch (error) {
+      console.error("Failed to update blog:", error);
+      alert("Failed to update blog post. Please try again.");
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: "" });
+    }
+  };
+
+  if (isFetching) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
+        <p className="text-gray-500 text-xl">Loading blog...</p>
+      </div>
+    );
+  }
+
+  if (fetchError || !blogData?.data) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 text-xl mb-4">Error loading blog</p>
+          <Link to="/Dashboard" className="text-amber-600 underline">
+            Return to dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-4xl mx-auto px-8 py-12">
@@ -23,9 +135,16 @@ const EditBlog = () => {
               </label>
               <input
                 type="text"
+                value={formData.title}
+                onChange={(e) => handleChange("title", e.target.value)}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                  errors.title ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Enter post title"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
+              {errors.title && (
+                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+              )}
             </div>
 
             {/* Description */}
@@ -34,10 +153,19 @@ const EditBlog = () => {
                 Description *
               </label>
               <textarea
+                value={formData.description}
+                onChange={(e) => handleChange("description", e.target.value)}
                 rows="5"
-                placeholder="Enter post Description"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                  errors.description ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="Enter post description"
               />
+              {errors.description && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.description}
+                </p>
+              )}
             </div>
 
             {/* Image URL */}
@@ -47,9 +175,28 @@ const EditBlog = () => {
               </label>
               <input
                 type="url"
+                value={formData.image}
+                onChange={(e) => handleChange("image", e.target.value)}
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                  errors.image ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="https://example.com/image.jpg"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
               />
+              {errors.image && (
+                <p className="text-red-500 text-sm mt-1">{errors.image}</p>
+              )}
+              {formData.image && isValidUrl(formData.image) && (
+                <div className="mt-4">
+                  <img
+                    src={formData.image}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Author & Category */}
@@ -60,34 +207,55 @@ const EditBlog = () => {
                 </label>
                 <input
                   type="text"
+                  value={formData.author}
+                  onChange={(e) => handleChange("author", e.target.value)}
+                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                    errors.author ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="Author name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
                 />
+                {errors.author && (
+                  <p className="text-red-500 text-sm mt-1">{errors.author}</p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Category *
                 </label>
-                <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400">
-                  <option>Crafts</option>
-                  <option>Design</option>
-                  <option>Handmade</option>
-                  <option>Interior</option>
-                  <option>Wood</option>
+                <select
+                  value={formData.category}
+                  onChange={(e) => handleChange("category", e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
 
-            {/* Action */}
-            <div className="pt-4 flex gap-6">
-              <button className="w-full flex items-center justify-center gap-2 bg-amber-500 text-white px-6 py-3 rounded-lg hover:bg-amber-600 transition-colors font-medium">
+            {/* Action Buttons */}
+            <div className="pt-4 flex gap-4">
+              <button
+                onClick={handleSubmit}
+                disabled={isUpdating}
+                className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition-colors font-medium ${
+                  isUpdating
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-amber-500 hover:bg-amber-600 text-white"
+                }`}
+              >
                 <AddIcon />
-                Update Post
+                {isUpdating ? "Updating..." : "Update Post"}
               </button>
 
-              <Link to="/Dashboard">
-                <button className="border px-12 py-4 rounded-md">Cancel</button>
+              <Link to="/Dashboard" className="flex-1">
+                <button className="w-full border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  Cancel
+                </button>
               </Link>
             </div>
           </div>
@@ -96,7 +264,8 @@ const EditBlog = () => {
         {/* Info Message */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-blue-800 font-medium">
-            You are editing an existing blog post.
+            You are editing:{" "}
+            <span className="font-bold">{blogData.data.title}</span>
           </p>
         </div>
       </div>

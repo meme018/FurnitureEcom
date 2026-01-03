@@ -1,26 +1,53 @@
+import { useState } from "react";
+import { useParams, Link } from "react-router";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import StarIcon from "@mui/icons-material/Star";
 import TwitterIcon from "@mui/icons-material/Twitter";
-import sidetable from "../assets/sidetable.png";
-import { Link } from "react-router";
 import ProductCard from "../components/ProductCard";
+import { useGetProductByIdQuery } from "../services/productApi";
 
 const SingleProduct = () => {
+  const { id } = useParams();
+  const { data: productData, isError } = useGetProductByIdQuery(id);
+
+  const product = productData?.data;
+
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
+  if (isError || !product) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl text-red-600">Product not found</p>
+      </div>
+    );
+  }
+
+  const handleQuantityChange = (change) => {
+    const newQuantity = quantity + change;
+    if (newQuantity >= 1 && newQuantity <= product.stock) {
+      setQuantity(newQuantity);
+    }
+  };
+
   return (
-    <div className="flex flex-col min-h-screen  mt-30">
+    <div className="flex flex-col min-h-screen mt-30">
+      {/* Breadcrumb */}
       <div className="flex flex-row gap-5 px-15">
         <Link to="/" className="text-lg text-gray-500">
           Home
-        </Link>{" "}
-        <ArrowForwardIosOutlinedIcon />{" "}
+        </Link>
+        <ArrowForwardIosOutlinedIcon />
         <Link to="/shop" className="text-lg text-gray-500">
           Shop
-        </Link>{" "}
+        </Link>
         <ArrowForwardIosOutlinedIcon />
         <span className="text-lg font-bold">|</span>
-        <span className="text-lg font-bold">Product Name</span>
+        <span className="text-lg font-bold">{product.name}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 px-15 py-10">
@@ -28,83 +55,130 @@ const SingleProduct = () => {
         <div className="flex gap-6">
           {/* Thumbnails */}
           <div className="flex flex-col gap-4">
-            {[1, 2, 3, 4].map((_, i) => (
+            {product.images?.map((img, i) => (
               <div
                 key={i}
-                className="w-20 h-20 bg-[#FFF6E5] flex items-center justify-center rounded-lg"
+                onClick={() => setSelectedImage(i)}
+                className={`w-20 h-20 bg-[#FFF6E5] flex items-center justify-center rounded-lg cursor-pointer ${
+                  selectedImage === i ? "ring-2 ring-yellow-500" : ""
+                }`}
               >
                 <img
-                  src="https://via.placeholder.com/80"
-                  alt="thumb"
-                  className="object-contain"
+                  src={img}
+                  alt={`${product.name} ${i + 1}`}
+                  className="object-cover w-full h-full rounded-lg"
                 />
               </div>
             ))}
           </div>
 
           {/* Main Image */}
-          <div className="flex-1 bg-[#FFF6E5] rounded-xl flex items-center justify-center">
+          <div className="flex-1 bg-[#FFF6E5] rounded-xl flex items-center justify-center p-8">
             <img
-              src="https://via.placeholder.com/400"
-              alt="Asgaard Sofa"
-              className="object-contain"
+              src={product.images?.[selectedImage]}
+              alt={product.name}
+              className="object-contain max-h-96"
             />
           </div>
         </div>
 
         {/* Product Info */}
         <div>
-          <h1 className="text-3xl font-semibold mb-2">Asgaard sofa</h1>
-          <p className="text-xl text-gray-500 mb-4">Rs. 250,000.00</p>
+          <h1 className="text-3xl font-semibold mb-2">{product.name}</h1>
+          <p className="text-xl text-gray-500 mb-4">
+            Rs. {product.price.toLocaleString()}
+          </p>
 
           {/* Rating */}
           <div className="flex items-center gap-3 mb-4">
             <div className="flex text-yellow-400">
-              <StarIcon />
+              {[...Array(5)].map((_, i) => (
+                <StarIcon key={i} />
+              ))}
             </div>
             <span className="text-sm text-gray-500">| 5 Customer Review</span>
           </div>
 
-          <p className="text-gray-600 mb-6">
-            Setting the bar as one of the loudest speakers in its class, the
-            Kilburn is a compact, stout-hearted hero with a well-balanced audio
-            which boasts a clear midrange and extended highs.
-          </p>
+          <p className="text-gray-600 mb-6">{product.description}</p>
 
           {/* Size */}
-          <div className="mb-6">
-            <p className="font-medium mb-2">Size</p>
-            <div className="flex gap-3">
-              {["L", "XL", "XS"].map((size) => (
-                <button
-                  key={size}
-                  className="border px-4 py-2 rounded-md text-sm hover:border-black"
-                >
-                  {size}
-                </button>
-              ))}
+          {product.sizes && product.sizes.length > 0 && (
+            <div className="mb-6">
+              <p className="font-medium mb-2">Size</p>
+              <div className="flex gap-3">
+                {product.sizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`border px-4 py-2 rounded-md text-sm hover:border-black ${
+                      selectedSize === size ? "bg-yellow-100 border-black" : ""
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Color */}
-          <div className="mb-6">
-            <p className="font-medium mb-2">Color</p>
-            <div className="flex gap-3">
-              <span className="w-8 h-8 rounded-full bg-purple-500 cursor-pointer" />
-              <span className="w-8 h-8 rounded-full bg-black cursor-pointer" />
-              <span className="w-8 h-8 rounded-full bg-yellow-600 cursor-pointer" />
+          {product.colors && product.colors.length > 0 && (
+            <div className="mb-6">
+              <p className="font-medium mb-2">Color</p>
+              <div className="flex gap-3">
+                {product.colors.map((color, i) => (
+                  <span
+                    key={i}
+                    onClick={() => setSelectedColor(color)}
+                    style={{ backgroundColor: color }}
+                    className={`w-8 h-8 rounded-full cursor-pointer ${
+                      selectedColor === color
+                        ? "ring-2 ring-offset-2 ring-black"
+                        : ""
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
+          )}
+
+          {/* Stock Info */}
+          <div className="mb-4">
+            <p className="text-sm text-gray-600">
+              {product.stock > 0 ? (
+                <span className="text-green-600">
+                  In Stock: {product.stock} available
+                </span>
+              ) : (
+                <span className="text-red-600">Out of Stock</span>
+              )}
+            </p>
           </div>
 
           {/* Quantity & Cart */}
           <div className="flex items-center gap-6 mb-8">
             <div className="flex items-center border rounded-md">
-              <button className="px-4 py-2">−</button>
-              <span className="px-4">0</span>
-              <button className="px-4 py-2">+</button>
+              <button
+                onClick={() => handleQuantityChange(-1)}
+                className="px-4 py-2 hover:bg-gray-100"
+                disabled={quantity <= 1}
+              >
+                −
+              </button>
+              <span className="px-4">{quantity}</span>
+              <button
+                onClick={() => handleQuantityChange(1)}
+                className="px-4 py-2 hover:bg-gray-100"
+                disabled={quantity >= product.stock}
+              >
+                +
+              </button>
             </div>
 
-            <button className="border px-10 py-3 rounded-md hover:bg-black hover:text-white transition">
+            <button
+              className="border px-10 py-3 rounded-md hover:bg-black hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={product.stock === 0}
+            >
               Add To Cart
             </button>
           </div>
@@ -113,14 +187,14 @@ const SingleProduct = () => {
 
           {/* Meta Info */}
           <div className="text-sm text-gray-500 space-y-2">
-            <p>SKU : SS001</p>
-            <p>Category : Sofas</p>
-            <p>Tags : Sofa, Chair, Home, Shop</p>
+            <p>SKU : {product.sku}</p>
+            <p>Category : {product.category}</p>
+            <p>Tags : {product.tags?.join(", ")}</p>
             <div className="flex items-center gap-4">
               <span>Share :</span>
-              <FacebookIcon />
-              <LinkedInIcon />
-              <TwitterIcon />
+              <FacebookIcon className="cursor-pointer hover:text-blue-600" />
+              <LinkedInIcon className="cursor-pointer hover:text-blue-700" />
+              <TwitterIcon className="cursor-pointer hover:text-blue-400" />
             </div>
           </div>
         </div>
@@ -128,56 +202,29 @@ const SingleProduct = () => {
 
       <hr className="mb-6" />
 
+      {/* Description Section */}
       <div className="w-auto mt-10 flex flex-col px-15 items-center">
-        <div className="flex gap-10  mb-6 text-2xl">
+        <div className="flex gap-10 mb-6 text-2xl">
           <button className="font-medium">Description</button>
           <button className="text-gray-400">Additional Information</button>
           <button className="text-gray-400">Reviews [5]</button>
         </div>
 
-        <p className="text-gray-400 text-xl max-w-7xl">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Rem
-          asperiores ratione sed repudiandae aspernatur unde cumque dolorem
-          eaque ipsam. Quidem vero dolorem quae dolorum laudantium et aliquid
-          voluptate. Porro eum molestiae, ipsa labore placeat officia in
-          perspiciatis harum officiis voluptates. Maxime nam veritatis
-          exercitationem consequuntur amet porro laborum aspernatur ab, corrupti
-          repellat distinctio. Enim debitis ex eligendi voluptate illo ea est
-          quas alias delectus voluptates dolorem, repellat id, cum minima
-          doloremque corporis rem repellendus odio iusto provident aspernatur
-          suscipit facere et possimus? Fugit dolor minima itaque, maiores
-          suscipit quasi optio odit totam nam excepturi explicabo reiciendis,
-          harum facilis necessitatibus commodi?
+        <p className="text-gray-600 text-lg max-w-7xl leading-relaxed">
+          {product.description}
         </p>
       </div>
 
+      {/* Product Images Gallery */}
       <div className="grid grid-cols-2 justify-center items-center px-15 py-10 mb-10 gap-10">
-        <img
-          src={sidetable}
-          alt="Banner"
-          className="w-full h-auto object-cover"
-        />
-        <img
-          src={sidetable}
-          alt="Banner"
-          className="w-full h-auto object-cover"
-        />
-      </div>
-
-      <hr className="mb-6" />
-
-      <div className="flex flex-col items-center py-10 gap-10">
-        <p className="text-3xl font-bold">Related Product</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6 px-15">
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
-        </div>
-
-        <button className="border-b-2 px-10 py-3  text-lg font-bold hover:bg-black hover:text-white transition mt-10 mx-auto block">
-          View More
-        </button>
+        {product.images?.slice(0, 2).map((img, i) => (
+          <img
+            key={i}
+            src={img}
+            alt={`${product.name} view ${i + 1}`}
+            className="w-full h-auto object-cover rounded-lg"
+          />
+        ))}
       </div>
     </div>
   );

@@ -1,8 +1,13 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { usePostProductMutation } from "../services/productApi";
 
 const AddProduct = () => {
+  const navigate = useNavigate();
+  const [postProduct, { isLoading }] = usePostProductMutation();
+
   const [productData, setProductData] = useState({
     name: "",
     price: "",
@@ -12,13 +17,32 @@ const AddProduct = () => {
     tags: "",
     stock: "",
     sizes: [],
-    colors: [], // store hex codes
+    colors: [],
   });
 
-  const [images, setImages] = useState([]);
+  const [imageUrls, setImageUrls] = useState([""]);
   const [customColor, setCustomColor] = useState("#000000");
 
-  const availableSizes = ["XS", "S", "M", "L", "XL", "XXL"];
+  const availableSizes = [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XXL",
+    "Standard",
+    "3-Tier",
+    "5-Tier",
+  ];
+  const categories = [
+    "Sofas",
+    "Chairs",
+    "Tables",
+    "Beds",
+    "Storage",
+    "Lighting",
+    "Decor",
+  ];
 
   /* -------------------- Handlers -------------------- */
   const handleInputChange = (e) => {
@@ -26,17 +50,18 @@ const AddProduct = () => {
     setProductData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const newImages = files.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-    }));
-    setImages((prev) => [...prev, ...newImages]);
+  const handleImageUrlChange = (index, value) => {
+    const newUrls = [...imageUrls];
+    newUrls[index] = value;
+    setImageUrls(newUrls);
   };
 
-  const removeImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+  const addImageUrlField = () => {
+    setImageUrls([...imageUrls, ""]);
+  };
+
+  const removeImageUrl = (index) => {
+    setImageUrls(imageUrls.filter((_, i) => i !== index));
   };
 
   const toggleSize = (size) => {
@@ -69,7 +94,8 @@ const AddProduct = () => {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // Validation
     if (
       !productData.name ||
       !productData.price ||
@@ -82,9 +108,40 @@ const AddProduct = () => {
       return;
     }
 
-    console.log("Product Data:", productData);
-    console.log("Images:", images);
-    alert("Product added successfully!");
+    const validUrls = imageUrls.filter((url) => url.trim() !== "");
+    if (validUrls.length === 0) {
+      alert("Please add at least one image URL");
+      return;
+    }
+
+    try {
+      const tagsArray = productData.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag !== "");
+
+      const payload = {
+        name: productData.name,
+        price: Number(productData.price),
+        description: productData.description,
+        category: productData.category,
+        sku: productData.sku,
+        tags: tagsArray,
+        images: validUrls,
+        sizes: productData.sizes,
+        colors: productData.colors,
+        stock: Number(productData.stock),
+      };
+
+      await postProduct(payload).unwrap();
+      alert("Product added successfully!");
+      navigate("/dashboard");
+    } catch (error) {
+      alert(
+        "Failed to add product: " +
+          (error.data?.message || error.message || "Please try again")
+      );
+    }
   };
 
   /* -------------------- UI -------------------- */
@@ -95,49 +152,67 @@ const AddProduct = () => {
 
         <div className="w-full max-w-6xl">
           <div className="flex flex-col lg:flex-row gap-10">
-            {/* Product Details */}
+            {/* Product Images */}
             <div className="flex-1">
               <h2 className="text-2xl font-semibold mb-6">Product Images</h2>
 
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
-                <input
-                  type="file"
-                  id="image-upload"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="image-upload"
-                  className="cursor-pointer flex flex-col items-center"
+              <div className="space-y-4 mb-6">
+                {imageUrls.map((url, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) =>
+                        handleImageUrlChange(index, e.target.value)
+                      }
+                      placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                      className="flex-1 border px-4 py-3 rounded-md"
+                    />
+                    {imageUrls.length > 1 && (
+                      <button
+                        onClick={() => removeImageUrl(index)}
+                        className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                      >
+                        <DeleteIcon />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  onClick={addImageUrlField}
+                  className="border px-6 py-3 rounded-md hover:bg-gray-50"
                 >
-                  <CloudUploadIcon className="w-16 h-16 text-gray-400 mb-4" />
-                  <p className="text-lg font-medium">Click to upload images</p>
-                </label>
+                  + Add Another Image URL
+                </button>
               </div>
 
-              {images.length > 0 && (
-                <div className="flex flex-wrap gap-4">
-                  {images.map((img, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={img.preview}
-                        alt="preview"
-                        className="w-24 h-24 object-cover rounded-lg"
-                      />
-                      <button
-                        onClick={() => removeImage(index)}
-                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100"
-                      >
-                        <DeleteIcon size={14} />
-                      </button>
-                    </div>
-                  ))}
+              {/* Image Preview */}
+              {imageUrls.some((url) => url.trim() !== "") && (
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Preview</h3>
+                  <div className="flex flex-wrap gap-4">
+                    {imageUrls
+                      .filter((url) => url.trim() !== "")
+                      .map((url, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={url}
+                            alt={`preview ${index + 1}`}
+                            className="w-24 h-24 object-cover rounded-lg"
+                            onError={(e) => {
+                              e.target.src =
+                                "https://via.placeholder.com/100?text=Invalid+URL";
+                            }}
+                          />
+                        </div>
+                      ))}
+                  </div>
                 </div>
               )}
 
-              <h2 className="text-2xl font-semibold mb-6">Product Details</h2>
+              <h2 className="text-2xl font-semibold mb-6 mt-8">
+                Product Details
+              </h2>
 
               <div className="flex flex-col gap-6">
                 <input
@@ -171,11 +246,12 @@ const AddProduct = () => {
                   onChange={handleInputChange}
                   className="border px-4 py-3 rounded-md"
                 >
-                  <option value="">Select category</option>
-                  <option>Sofas</option>
-                  <option>Chairs</option>
-                  <option>Tables</option>
-                  <option>Beds</option>
+                  <option value="">Select category*</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                 </select>
 
                 <input
@@ -210,10 +286,10 @@ const AddProduct = () => {
                 <button
                   key={size}
                   onClick={() => toggleSize(size)}
-                  className={`px-6 py-3 border rounded-md ${
+                  className={`px-6 py-3 border rounded-md transition ${
                     productData.sizes.includes(size)
                       ? "bg-black text-white"
-                      : ""
+                      : "hover:bg-gray-100"
                   }`}
                 >
                   {size}
@@ -227,23 +303,25 @@ const AddProduct = () => {
             <h3 className="text-xl font-medium mb-3">Available Colors</h3>
 
             {/* Selected Colors */}
-            <div className="flex gap-4 flex-wrap mb-4">
-              {productData.colors.map((hex) => (
-                <div key={hex} className="relative group">
-                  <div
-                    className="w-12 h-12 rounded-full ring-2 ring-black"
-                    style={{ backgroundColor: hex }}
-                    title={hex}
-                  />
-                  <button
-                    onClick={() => removeColor(hex)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
+            {productData.colors.length > 0 && (
+              <div className="flex gap-4 flex-wrap mb-4">
+                {productData.colors.map((hex) => (
+                  <div key={hex} className="relative group">
+                    <div
+                      className="w-12 h-12 rounded-full ring-2 ring-black"
+                      style={{ backgroundColor: hex }}
+                      title={hex}
+                    />
+                    <button
+                      onClick={() => removeColor(hex)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Color Input */}
             <div className="flex items-center gap-4">
@@ -251,7 +329,7 @@ const AddProduct = () => {
                 type="color"
                 value={customColor}
                 onChange={(e) => setCustomColor(e.target.value)}
-                className="w-14 h-14"
+                className="w-14 h-14 cursor-pointer"
               />
               <input
                 type="text"
@@ -278,17 +356,26 @@ const AddProduct = () => {
               placeholder="Tags (comma separated)"
               className="w-full border px-4 py-3 rounded-md"
             />
+            <p className="text-sm text-gray-500 mt-2">
+              Example: Modern, Luxury, Wooden
+            </p>
           </div>
 
           {/* Actions */}
           <div className="mt-10 flex gap-6">
             <button
               onClick={handleSubmit}
-              className="bg-black text-white px-12 py-4 rounded-md"
+              disabled={isLoading}
+              className="bg-black text-white px-12 py-4 rounded-md hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Add Product
+              {isLoading ? "Adding..." : "Add Product"}
             </button>
-            <button className="border px-12 py-4 rounded-md">Cancel</button>
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="border px-12 py-4 rounded-md hover:bg-gray-50"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>

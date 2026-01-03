@@ -13,28 +13,29 @@ import Dashboard from "./Admin/Dashboard";
 import SingleBlog from "./pages/SingleBlog";
 import EditProduct from "./Admin/EditProduct";
 import EditBlog from "./Admin/EditBlog";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Create a component to handle footer visibility
 const FooterHandler = () => {
   const location = useLocation();
-  const noFooterPaths = ["/Dashboard", "/editProduct"];
+  const noFooterPaths = ["/dashboard", "/editProduct", "/editBlog"];
 
-  return (
-    !noFooterPaths.some((path) => location.pathname.startsWith(path)) && (
-      <Footer />
-    )
+  const shouldHideFooter = noFooterPaths.some((path) =>
+    location.pathname.toLowerCase().startsWith(path)
   );
+
+  return !shouldHideFooter && <Footer />;
 };
 
 const NavbarHandler = () => {
   const location = useLocation();
-  const noNavbarPaths = ["/Dashboard", "/editProduct", "/editBlog"];
+  const noNavbarPaths = ["/dashboard", "/editProduct", "/editBlog"];
 
-  return (
-    !noNavbarPaths.some((path) => location.pathname.startsWith(path)) && (
-      <Navbar />
-    )
+  const shouldHideNavbar = noNavbarPaths.some((path) =>
+    location.pathname.toLowerCase().startsWith(path)
   );
+
+  return !shouldHideNavbar && <Navbar />;
 };
 
 function App() {
@@ -42,21 +43,59 @@ function App() {
     <>
       <NavbarHandler />
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/registration" element={<Registration />} />
         <Route path="/product" element={<SingleProduct />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<CheckOut />} />
-        <Route path="/singleProduct" element={<SingleProduct />} />
-        <Route path="/singleBlog" element={<SingleBlog />} />
+        <Route path="/singleProduct/:id" element={<SingleProduct />} />
+        <Route path="/singleBlog/:id" element={<SingleBlog />} />
 
-        {/* Admin Routes */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/editProduct" element={<EditProduct />} />
-        <Route path="/editBlog" element={<EditBlog />} />
+        {/* Customer Protected Routes */}
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute requiredRole="customer">
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute requiredRole="customer">
+              <CheckOut />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Protected Routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/editProduct/:id"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <EditProduct />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/editBlog/:id"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <EditBlog />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
       <FooterHandler />
     </>

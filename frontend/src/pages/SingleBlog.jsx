@@ -3,25 +3,54 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import PersonIcon from "@mui/icons-material/Person";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
+import { useGetBlogByIdQuery } from "../services/blogApi";
 
 const SingleBlog = () => {
-  // This would typically come from props or route params
-  const blogPost = {
-    id: 1,
-    image:
-      "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&q=80",
-    title: "Going all-in with millennial design",
-    author: "Admin",
-    date: "14 Oct 2022",
-    category: "Handmade",
+  const { id } = useParams();
+  const { data: blogData, isLoading, isError } = useGetBlogByIdQuery(id);
+  const blogPost = blogData?.data;
+
+  // Format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-500 text-xl">Loading blog...</p>
+      </div>
+    );
+  }
+
+  if (isError || !blogPost) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 text-xl mb-4">Error loading blog</p>
+          <Link to="/blog" className="text-amber-600 underline">
+            Return to blogs
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-row py-10 items-center  gap-2 text-lg max-w-6xl mx-auto mt-20">
-          <Link to="/blog">Blog</Link> <ArrowForwardIosOutlinedIcon />{" "}
+        {/* Breadcrumb */}
+        <div className="flex flex-row py-10 items-center gap-2 text-lg max-w-6xl mx-auto mt-20">
+          <Link to="/blog" className="hover:text-amber-600">
+            Blog
+          </Link>
+          <ArrowForwardIosOutlinedIcon fontSize="small" />
           <span className="text-lg text-gray-500">Blog Details</span>
         </div>
 
@@ -37,15 +66,15 @@ const SingleBlog = () => {
           {/* Meta Information */}
           <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 mb-6">
             <div className="flex items-center gap-2">
-              <PersonIcon className="text-lg" />
+              <PersonIcon fontSize="small" />
               <span>{blogPost.author}</span>
             </div>
             <div className="flex items-center gap-2">
-              <CalendarTodayIcon className="text-lg" />
-              <span>{blogPost.date}</span>
+              <CalendarTodayIcon fontSize="small" />
+              <span>{formatDate(blogPost.date)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <LocalOfferIcon className="text-lg" />
+              <LocalOfferIcon fontSize="small" />
               <span>{blogPost.category}</span>
             </div>
           </div>
@@ -60,58 +89,16 @@ const SingleBlog = () => {
             className="prose prose-lg max-w-none"
             style={{ lineHeight: "1.8" }}
           >
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Mus
-              mauris vitae ultricies leo integer malesuada nunc. In nulla
-              posuere sollicitudin aliquam ultrices sagittis orci a scelerisque.
-              Diam phasellus vestibulum lorem sed risus ultricies tristique
-              nulla aliquet.
-            </p>
+            <p className="text-gray-700 text-lg mb-6">{blogPost.description}</p>
+          </div>
 
-            <p>
-              Mollis nunc sed id semper risus in hendrerit gravida rutrum.
-              Posuere urna nec tincidunt praesent semper feugiat. Habitant morbi
-              tristique senectus et netus et malesuada fames ac. Ipsum a arcu
-              cursus vitae congue mauris rhoncus aenean. Purus semper eget duis
-              at tellus at urna condimentum.
-            </p>
-
-            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-              The Evolution of Modern Design
-            </h2>
-
-            <p>
-              Facilisis mauris sit amet massa vitae tortor condimentum lacinia
-              quis. Vitae elementum curabitur vitae nunc sed velit dignissim
-              sodales ut. Eu scelerisque felis imperdiet proin fermentum leo vel
-              orci porta. Pellentesque diam volutpat commodo sed egestas egestas
-              fringilla phasellus.
-            </p>
-            <p>
-              Ornare arcu dui vivamus arcu felis bibendum ut tristique et.
-              Egestas dui id ornare arcu odio ut sem nulla. Eu consequat ac
-              felis donec et odio pellentesque diam volutpat. Tincidunt eget
-              nullam non nisi est sit amet facilisis magna.
-            </p>
-
-            <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
-              Key Principles to Follow
-            </h2>
-
-            <ul className="list-disc list-inside space-y-2">
-              <li>Minimalism and simplicity in every element</li>
-              <li>Natural materials and sustainable choices</li>
-              <li>Function meets aesthetic appeal</li>
-              <li>Personal touches that tell your story</li>
-            </ul>
-
-            <p>
-              Sed blandit libero volutpat sed cras ornare arcu dui. Volutpat
-              commodo sed egestas egestas fringilla phasellus faucibus
-              scelerisque. Lectus vestibulum mattis ullamcorper velit sed
-              ullamcorper morbi tincidunt.
-            </p>
+          {/* Back to blog button */}
+          <div className="mt-12 mb-8">
+            <Link to="/blog">
+              <button className="px-6 py-3 bg-amber-100 text-gray-900 rounded-lg hover:bg-amber-200 transition-colors">
+                ← Back to all blogs
+              </button>
+            </Link>
           </div>
         </div>
       </div>
