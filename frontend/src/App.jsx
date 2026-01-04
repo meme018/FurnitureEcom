@@ -1,6 +1,6 @@
 import { Route, Routes, useLocation } from "react-router";
 import Home from "./pages/Home";
-import Navbar from "./components/navbar";
+import Navbar from "./components/Navbar";
 import Shop from "./pages/Shop";
 import Registration from "./pages/Registration";
 import SingleProduct from "./pages/SingleProduct";
