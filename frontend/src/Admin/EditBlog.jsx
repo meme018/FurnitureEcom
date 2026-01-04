@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import { Link, useNavigate, useParams } from "react-router";
 import {
@@ -20,14 +20,27 @@ const EditBlog = () => {
   const blog = blogData?.data;
 
   const [formData, setFormData] = useState({
-    title: blog?.title || "",
-    description: blog?.description || "",
-    image: blog?.image || "",
-    author: blog?.author || "",
-    category: blog?.category || "Handmade",
+    title: "",
+    description: "",
+    image: "",
+    author: "",
+    category: "Handmade",
   });
 
   const [errors, setErrors] = useState({});
+
+  // Update form data when blog data is loaded
+  useEffect(() => {
+    if (blog) {
+      setFormData({
+        title: blog.title || "",
+        description: blog.description || "",
+        image: blog.image || "",
+        author: blog.author || "",
+        category: blog.category || "Handmade",
+      });
+    }
+  }, [blog]);
 
   const categories = ["Crafts", "Design", "Handmade", "Interior", "Wood"];
 
@@ -61,7 +74,6 @@ const EditBlog = () => {
       new URL(string);
       return true;
     } catch (err) {
-      console.error(err);
       return false;
     }
   };
@@ -79,7 +91,7 @@ const EditBlog = () => {
       }).unwrap();
 
       alert("Blog post updated successfully!");
-      navigate("/Dashboard");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Failed to update blog:", error);
       alert("Failed to update blog post. Please try again.");
@@ -106,7 +118,7 @@ const EditBlog = () => {
       <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-500 text-xl mb-4">Error loading blog</p>
-          <Link to="/Dashboard" className="text-amber-600 underline">
+          <Link to="/dashboard" className="text-amber-600 underline">
             Return to dashboard
           </Link>
         </div>
@@ -252,7 +264,7 @@ const EditBlog = () => {
                 {isUpdating ? "Updating..." : "Update Post"}
               </button>
 
-              <Link to="/Dashboard" className="flex-1">
+              <Link to="/dashboard" className="flex-1">
                 <button className="w-full border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50 transition-colors">
                   Cancel
                 </button>

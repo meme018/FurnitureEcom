@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
@@ -19,21 +19,38 @@ const EditProduct = () => {
   const product = productData?.data;
 
   const [formData, setFormData] = useState({
-    name: product?.name || "",
-    price: product?.price || "",
-    description: product?.description || "",
-    sku: product?.sku || "",
-    category: product?.category || "",
-    tags: product?.tags?.join(", ") || "",
-    stock: product?.stock || "",
-    sizes: product?.sizes || [],
-    colors: product?.colors || [],
+    name: "",
+    price: "",
+    description: "",
+    sku: "",
+    category: "",
+    tags: "",
+    stock: "",
+    sizes: [],
+    colors: [],
   });
 
-  const [imageUrls, setImageUrls] = useState(
-    product?.images?.length > 0 ? product.images : [""]
-  );
+  const [imageUrls, setImageUrls] = useState([""]);
   const [customColor, setCustomColor] = useState("#000000");
+
+  // Update form data when product data is loaded
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name || "",
+        price: product.price || "",
+        description: product.description || "",
+        sku: product.sku || "",
+        category: product.category || "",
+        tags: product.tags?.join(", ") || "",
+        stock: product.stock || "",
+        sizes: product.sizes || [],
+        colors: product.colors || [],
+      });
+
+      setImageUrls(product.images?.length > 0 ? product.images : [""]);
+    }
+  }, [product]);
 
   const availableSizes = [
     "XS",
