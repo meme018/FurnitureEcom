@@ -1,8 +1,90 @@
-import React from "react";
+import React, { useState } from "react";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useCart } from "../services/useCart";
 
 const CheckOut = () => {
+  const navigate = useNavigate();
+  const { cartItems, getCartTotal, clearCart } = useCart();
+
+  const [billingDetails, setBillingDetails] = useState({
+    firstName: "",
+    lastName: "",
+    companyName: "",
+    country: "",
+    streetAddress: "",
+    city: "",
+    province: "Western Province",
+    zipCode: "",
+    phone: "",
+    email: "",
+    additionalInfo: "",
+  });
+
+  const [paymentMethod, setPaymentMethod] = useState("bank");
+
+  const handleInputChange = (e) => {
+    setBillingDetails({
+      ...billingDetails,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handlePlaceOrder = (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (
+      !billingDetails.firstName ||
+      !billingDetails.lastName ||
+      !billingDetails.country ||
+      !billingDetails.streetAddress ||
+      !billingDetails.city ||
+      !billingDetails.zipCode ||
+      !billingDetails.phone ||
+      !billingDetails.email
+    ) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    // Create order object
+    const order = {
+      billingDetails,
+      items: cartItems,
+      total: getCartTotal(),
+      paymentMethod,
+      orderDate: new Date().toISOString(),
+      orderId: `ORD-${Date.now()}`,
+    };
+
+    // Store order in localStorage
+    const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+    existingOrders.push(order);
+    localStorage.setItem("orders", JSON.stringify(existingOrders));
+
+    // Clear cart
+    clearCart();
+
+    // Show success and redirect
+    alert(`Order placed successfully! Order ID: ${order.orderId}`);
+    navigate("/");
+  };
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <p className="text-2xl text-gray-500 mb-6">Your cart is empty</p>
+        <Link
+          to="/shop"
+          className="border border-black px-8 py-3 rounded-md hover:bg-black hover:text-white transition"
+        >
+          Continue Shopping
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen pt-25">
       <div
@@ -19,22 +101,33 @@ const CheckOut = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-20 px-20 py-10">
+      <form
+        onSubmit={handlePlaceOrder}
+        className="grid grid-cols-2 gap-20 px-20 py-10"
+      >
         {/* Billing Details */}
         <div>
           <p className="text-2xl font-bold py-4">Billing Details</p>
           <div className="mb-6 grid grid-cols-2 gap-5">
             <div>
-              <label className="block text-lg mb-2">First Name</label>
+              <label className="block text-lg mb-2">First Name *</label>
               <input
-                type="firstName"
+                type="text"
+                name="firstName"
+                value={billingDetails.firstName}
+                onChange={handleInputChange}
+                required
                 className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
               />
             </div>
             <div>
-              <label className="block text-lg mb-2">Last Name</label>
+              <label className="block text-lg mb-2">Last Name *</label>
               <input
-                type="lastName"
+                type="text"
+                name="lastName"
+                value={billingDetails.lastName}
+                onChange={handleInputChange}
+                required
                 className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
               />
             </div>
@@ -46,37 +139,57 @@ const CheckOut = () => {
             </label>
             <input
               type="text"
+              name="companyName"
+              value={billingDetails.companyName}
+              onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-lg mb-2">Country / Region</label>
+            <label className="block text-lg mb-2">Country / Region *</label>
             <input
               type="text"
+              name="country"
+              value={billingDetails.country}
+              onChange={handleInputChange}
+              required
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-lg mb-2">Street Address</label>
-            <input
-              type="address"
-              className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
-            />
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-lg mb-2">Town / City</label>
+            <label className="block text-lg mb-2">Street Address *</label>
             <input
               type="text"
+              name="streetAddress"
+              value={billingDetails.streetAddress}
+              onChange={handleInputChange}
+              required
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
             />
           </div>
 
-          <div className="mb-6 fle">
+          <div className="mb-6">
+            <label className="block text-lg mb-2">Town / City *</label>
+            <input
+              type="text"
+              name="city"
+              value={billingDetails.city}
+              onChange={handleInputChange}
+              required
+              className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
+            />
+          </div>
+
+          <div className="mb-6">
             <label className="block text-lg mb-2">Province</label>
-            <select className=" w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black">
+            <select
+              name="province"
+              value={billingDetails.province}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
+            >
               <option>Western Province</option>
               <option>Central Province</option>
               <option>Southern Province</option>
@@ -84,25 +197,37 @@ const CheckOut = () => {
           </div>
 
           <div className="mb-6">
-            <label className="block text-lg mb-2">ZIP Code</label>
+            <label className="block text-lg mb-2">ZIP Code *</label>
             <input
               type="text"
+              name="zipCode"
+              value={billingDetails.zipCode}
+              onChange={handleInputChange}
+              required
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-lg mb-2">Phone</label>
+            <label className="block text-lg mb-2">Phone *</label>
             <input
               type="tel"
+              name="phone"
+              value={billingDetails.phone}
+              onChange={handleInputChange}
+              required
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-lg mb-2">Email Address</label>
+            <label className="block text-lg mb-2">Email Address *</label>
             <input
               type="email"
+              name="email"
+              value={billingDetails.email}
+              onChange={handleInputChange}
+              required
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:border-black"
             />
           </div>
@@ -110,6 +235,9 @@ const CheckOut = () => {
           <div className="mb-6">
             <input
               type="text"
+              name="additionalInfo"
+              value={billingDetails.additionalInfo}
+              onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-md p-3 focus:outline-none mt-10 focus:border-black"
               placeholder="Additional Information"
             />
@@ -119,30 +247,41 @@ const CheckOut = () => {
         {/* Order Summary */}
         <div>
           <div className="border-b pb-6">
-            <div className="flex justify-between font-semibold text-xl">
+            <div className="flex justify-between font-semibold text-xl mb-4">
               <span>Product</span>
               <span>Subtotal</span>
             </div>
 
-            <div className="flex justify-between mt-4 text-lg">
-              <span>Asgaard sofa × 1</span>
-              <span>Rs. 250,000.00</span>
-            </div>
+            {cartItems.map((item, index) => (
+              <div key={index} className="flex justify-between mt-4 text-lg">
+                <span>
+                  {item.name} × {item.quantity}
+                  {item.selectedSize && ` (${item.selectedSize})`}
+                </span>
+                <span>Rs. {(item.price * item.quantity).toLocaleString()}</span>
+              </div>
+            ))}
           </div>
 
           <div className="flex justify-between mt-6 text-lg">
             <span>Subtotal</span>
-            <span>Rs. 250,000.00</span>
+            <span>Rs. {getCartTotal().toLocaleString()}</span>
           </div>
 
           <div className="flex justify-between mt-4 text-lg font-semibold text-yellow-600">
             <span>Total</span>
-            <span>Rs. 250,000.00</span>
+            <span>Rs. {getCartTotal().toLocaleString()}</span>
           </div>
 
           <div className="mt-8 space-y-4 text-lg">
             <label className="flex gap-3">
-              <input type="radio" name="payment" defaultChecked />
+              <input
+                type="radio"
+                name="payment"
+                value="bank"
+                checked={paymentMethod === "bank"}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              />
               <span>
                 <strong>Direct Bank Transfer</strong>
                 <p className="text-gray-500 mt-1">
@@ -153,12 +292,24 @@ const CheckOut = () => {
             </label>
 
             <label className="flex gap-3">
-              <input type="radio" name="payment" />
+              <input
+                type="radio"
+                name="payment"
+                value="bank2"
+                checked={paymentMethod === "bank2"}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              />
               <span>Direct Bank Transfer</span>
             </label>
 
             <label className="flex gap-3">
-              <input type="radio" name="payment" />
+              <input
+                type="radio"
+                name="payment"
+                value="cod"
+                checked={paymentMethod === "cod"}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+              />
               <span>Cash On Delivery</span>
             </label>
           </div>
@@ -170,11 +321,14 @@ const CheckOut = () => {
             <span className="underline cursor-pointer">privacy policy</span>.
           </p>
 
-          <button className="mt-8 w-full border border-black py-3 rounded-md hover:bg-black hover:text-white transition">
+          <button
+            type="submit"
+            className="mt-8 w-full border border-black py-3 rounded-md hover:bg-black hover:text-white transition"
+          >
             Place order
           </button>
         </div>
-      </div>
+      </form>
 
       {/* Banner */}
       <div className="h-70 bg-[#faf4f4] justify-center items-center grid grid-cols-3 p-10">

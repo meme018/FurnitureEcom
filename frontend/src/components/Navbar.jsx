@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
@@ -6,14 +6,35 @@ import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { Link, useNavigate } from "react-router";
 import CartPopup from "./CartPopup";
+import { useCart } from "../services/useCart";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [CartOpen, setCartOpen] = useState(false);
+  const { getCartCount } = useCart();
+
   // Initialize state directly from localStorage
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return !!localStorage.getItem("token");
   });
+
+  // Listen for auth changes
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setIsLoggedIn(!!localStorage.getItem("token"));
+    };
+
+    // Add event listener for custom auth change event
+    window.addEventListener("authChange", handleAuthChange);
+
+    // Also check on component mount
+    handleAuthChange();
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("authChange", handleAuthChange);
+    };
+  }, []);
 
   const handleLogout = () => {
     // Clear all auth data
@@ -22,6 +43,10 @@ const Navbar = () => {
     localStorage.removeItem("userRole");
 
     setIsLoggedIn(false);
+
+    // Dispatch auth change event
+    window.dispatchEvent(new Event("authChange"));
+
     navigate("/");
   };
 
@@ -57,10 +82,17 @@ const Navbar = () => {
         )}
         <SearchOutlinedIcon sx={{ fontSize: 35 }} />
         <FavoriteBorderOutlinedIcon sx={{ fontSize: 35 }} />
-        <ShoppingCartOutlinedIcon
-          sx={{ fontSize: 35 }}
+        <div
+          className="relative cursor-pointer"
           onClick={() => setCartOpen(true)}
-        />
+        >
+          <ShoppingCartOutlinedIcon sx={{ fontSize: 35 }} />
+          {getCartCount() > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {getCartCount()}
+            </span>
+          )}
+        </div>
       </div>
 
       <CartPopup isOpen={CartOpen} onClose={() => setCartOpen(false)} />

@@ -14,7 +14,7 @@ import SingleBlog from "./pages/SingleBlog";
 import EditProduct from "./Admin/EditProduct";
 import EditBlog from "./Admin/EditBlog";
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import { CartProvider } from "./context/CartNContext";
 // Create a component to handle footer visibility
 const FooterHandler = () => {
   const location = useLocation();
@@ -40,7 +40,7 @@ const NavbarHandler = () => {
 
 function App() {
   return (
-    <>
+    <CartProvider>
       <NavbarHandler />
       <Routes>
         {/* Public Routes */}
@@ -98,7 +98,7 @@ function App() {
         />
       </Routes>
       <FooterHandler />
-    </>
+    </CartProvider>
   );
 }
 

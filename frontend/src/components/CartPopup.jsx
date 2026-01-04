@@ -1,8 +1,11 @@
 import React from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import { Link } from "react-router";
+import { useCart } from "../services/useCart";
 
 const CartPopup = ({ isOpen, onClose }) => {
+  const { cartItems, removeFromCart, getCartTotal } = useCart();
+
   return (
     <div>
       {isOpen && (
@@ -20,50 +23,92 @@ const CartPopup = ({ isOpen, onClose }) => {
           <CloseIcon className="cursor-pointer" onClick={onClose} />
         </div>
 
-        {/* Cart Item */}
-        <div className="p-6 flex gap-4 items-center">
-          <div className="w-20 h-20 bg-[#FFF6E5] rounded-lg flex items-center justify-center">
-            <img
-              src="https://via.placeholder.com/80"
-              alt="Asgaard Sofa"
-              className="object-contain"
-            />
-          </div>
+        {/* Cart Items */}
+        <div className="p-6 max-h-[calc(100vh-250px)] overflow-y-auto">
+          {cartItems.length === 0 ? (
+            <p className="text-center text-gray-500 py-8">Your cart is empty</p>
+          ) : (
+            cartItems.map((item, index) => (
+              <div key={index} className="flex gap-4 items-center mb-4">
+                <div className="w-20 h-20 bg-[#FFF6E5] rounded-lg flex items-center justify-center">
+                  <img
+                    src={item.image || "https://via.placeholder.com/80"}
+                    alt={item.name}
+                    className="object-contain w-full h-full rounded-lg"
+                  />
+                </div>
 
-          <div className="flex-1">
-            <h4 className="font-medium">Asgaard sofa</h4>
-            <p className="text-sm text-gray-500">
-              1 × <span className="text-yellow-600">Rs. 250,000.00</span>
-            </p>
-          </div>
+                <div className="flex-1">
+                  <h4 className="font-medium">{item.name}</h4>
+                  {item.selectedSize && (
+                    <p className="text-xs text-gray-500">
+                      Size: {item.selectedSize}
+                    </p>
+                  )}
+                  {item.selectedColor && (
+                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                      Color:{" "}
+                      <span
+                        className="w-3 h-3 rounded-full inline-block"
+                        style={{ backgroundColor: item.selectedColor }}
+                      ></span>
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-500">
+                    {item.quantity} ×{" "}
+                    <span className="text-yellow-600">
+                      Rs. {item.price.toLocaleString()}
+                    </span>
+                  </p>
+                </div>
 
-          <button className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 text-sm">
-            ×
-          </button>
+                <button
+                  onClick={() =>
+                    removeFromCart(
+                      item.id,
+                      item.selectedSize,
+                      item.selectedColor
+                    )
+                  }
+                  className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-200 text-sm hover:bg-red-100 hover:text-red-600 transition"
+                >
+                  ×
+                </button>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Subtotal */}
-        <div className="px-6 mt-10 flex justify-between text-sm">
-          <span>Subtotal</span>
-          <span className="text-yellow-600 font-medium">Rs. 250,000.00</span>
-        </div>
+        {cartItems.length > 0 && (
+          <>
+            <div className="px-6 mt-4 flex justify-between text-sm border-t pt-4">
+              <span>Subtotal</span>
+              <span className="text-yellow-600 font-medium">
+                Rs. {getCartTotal().toLocaleString()}
+              </span>
+            </div>
 
-        {/* Buttons */}
-        <div className="absolute bottom-6 left-0 w-full px-6 flex gap-4">
-          <Link
-            to="/cart"
-            className="flex-1 border border-black rounded-full py-2 text-center text-sm hover:bg-black hover:text-white transition"
-          >
-            View Cart
-          </Link>
+            {/* Buttons */}
+            <div className="absolute bottom-6 left-0 w-full px-6 flex gap-4">
+              <Link
+                to="/cart"
+                onClick={onClose}
+                className="flex-1 border border-black rounded-full py-2 text-center text-sm hover:bg-black hover:text-white transition"
+              >
+                View Cart
+              </Link>
 
-          <Link
-            to="/checkout"
-            className="flex-1 border border-black rounded-full py-2 text-center text-sm hover:bg-black hover:text-white transition"
-          >
-            Checkout
-          </Link>
-        </div>
+              <Link
+                to="/checkout"
+                onClick={onClose}
+                className="flex-1 border border-black rounded-full py-2 text-center text-sm hover:bg-black hover:text-white transition"
+              >
+                Checkout
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

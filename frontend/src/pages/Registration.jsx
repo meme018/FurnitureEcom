@@ -28,15 +28,21 @@ const Registration = () => {
 
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState({ login: "", register: "" });
+  const [successMessage, setSuccessMessage] = useState({
+    login: "",
+    register: "",
+  });
 
   const handleLoginChange = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
     setError({ ...error, login: "" });
+    setSuccessMessage({ ...successMessage, login: "" });
   };
 
   const handleRegisterChange = (e) => {
     setRegisterData({ ...registerData, [e.target.name]: e.target.value });
     setError({ ...error, register: "" });
+    setSuccessMessage({ ...successMessage, register: "" });
   };
 
   const handleLogin = async (e) => {
@@ -58,12 +64,23 @@ const Registration = () => {
       localStorage.setItem("token", result.token);
       localStorage.setItem("userRole", result.data.role);
 
-      // Redirect based on role
-      if (result.data.role === "admin") {
-        navigate("/dashboard");
-      } else {
-        navigate("/");
-      }
+      // Dispatch custom event to notify Navbar
+      window.dispatchEvent(new Event("authChange"));
+
+      // Show success message
+      setSuccessMessage({
+        ...successMessage,
+        login: "Login successful! Redirecting...",
+      });
+
+      // Redirect after a short delay to show the success message
+      setTimeout(() => {
+        if (result.data.role === "admin") {
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
+      }, 1000);
     } catch (err) {
       setError({
         ...error,
@@ -98,12 +115,23 @@ const Registration = () => {
       localStorage.setItem("token", result.token);
       localStorage.setItem("userRole", result.data.role);
 
-      // Redirect based on role
-      if (result.data.role === "admin") {
-        navigate("/dashboard");
-      } else {
-        navigate("/");
-      }
+      // Dispatch custom event to notify Navbar
+      window.dispatchEvent(new Event("authChange"));
+
+      // Show success message
+      setSuccessMessage({
+        ...successMessage,
+        register: "Registration successful! Redirecting...",
+      });
+
+      // Redirect after a short delay to show the success message
+      setTimeout(() => {
+        if (result.data.role === "admin") {
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
+      }, 1000);
     } catch (err) {
       setError({
         ...error,
@@ -169,6 +197,12 @@ const Registration = () => {
           {error.login && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
               {error.login}
+            </div>
+          )}
+
+          {successMessage.login && (
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
+              {successMessage.login}
             </div>
           )}
 
@@ -250,6 +284,12 @@ const Registration = () => {
           {error.register && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
               {error.register}
+            </div>
+          )}
+
+          {successMessage.register && (
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md">
+              {successMessage.register}
             </div>
           )}
 

@@ -1,16 +1,18 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router";
+import { useParams, Link, useNavigate } from "react-router";
 import ArrowForwardIosOutlinedIcon from "@mui/icons-material/ArrowForwardIosOutlined";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import StarIcon from "@mui/icons-material/Star";
 import TwitterIcon from "@mui/icons-material/Twitter";
-import ProductCard from "../components/ProductCard";
 import { useGetProductByIdQuery } from "../services/productApi";
+import { useCart } from "../services/useCart";
 
 const SingleProduct = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { data: productData, isError } = useGetProductByIdQuery(id);
+  const { addToCart } = useCart();
 
   const product = productData?.data;
 
@@ -18,6 +20,7 @@ const SingleProduct = () => {
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   if (isError || !product) {
     return (
@@ -34,8 +37,45 @@ const SingleProduct = () => {
     }
   };
 
+  const handleAddToCart = () => {
+    // Check if user is logged in
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/registration");
+      return;
+    }
+
+    // Validate size and color if they exist
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      alert("Please select a size");
+      return;
+    }
+
+    if (product.colors && product.colors.length > 0 && !selectedColor) {
+      alert("Please select a color");
+      return;
+    }
+
+    // Add to cart
+    addToCart(product, quantity, selectedSize, selectedColor);
+
+    // Show success message
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
+
+    // Reset selections
+    setQuantity(1);
+  };
+
   return (
     <div className="flex flex-col min-h-screen mt-30">
+      {/* Success Message */}
+      {showSuccess && (
+        <div className="fixed top-24 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+          Item added to cart successfully!
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <div className="flex flex-row gap-5 px-15">
         <Link to="/" className="text-lg text-gray-500">
@@ -176,6 +216,7 @@ const SingleProduct = () => {
             </div>
 
             <button
+              onClick={handleAddToCart}
               className="border px-10 py-3 rounded-md hover:bg-black hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={product.stock === 0}
             >
