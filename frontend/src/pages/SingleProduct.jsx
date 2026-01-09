@@ -257,13 +257,13 @@ const SingleProduct = () => {
       </div>
 
       {/* Product Images Gallery */}
-      <div className="grid grid-cols-2 justify-center items-center px-15 py-10 mb-10 gap-10">
+      <div className="grid grid-cols-2 justify-items-center place-items-center px-15 py-10 mb-10 gap-10">
         {product.images?.slice(0, 2).map((img, i) => (
           <img
             key={i}
             src={img}
             alt={`${product.name} view ${i + 1}`}
-            className="w-full h-auto object-cover rounded-lg"
+            className="w-auto h-130 object-cover rounded-lg centered"
           />
         ))}
       </div>

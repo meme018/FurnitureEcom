@@ -13,85 +13,77 @@ const Navbar = () => {
   const [CartOpen, setCartOpen] = useState(false);
   const { getCartCount } = useCart();
 
-  // Initialize state directly from localStorage
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return !!localStorage.getItem("token");
   });
 
-  // Listen for auth changes
   useEffect(() => {
     const handleAuthChange = () => {
       setIsLoggedIn(!!localStorage.getItem("token"));
     };
 
-    // Add event listener for custom auth change event
     window.addEventListener("authChange", handleAuthChange);
-
-    // Also check on component mount
     handleAuthChange();
 
-    // Cleanup
     return () => {
       window.removeEventListener("authChange", handleAuthChange);
     };
   }, []);
 
   const handleLogout = () => {
-    // Clear all auth data
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
-
     setIsLoggedIn(false);
-
-    // Dispatch auth change event
     window.dispatchEvent(new Event("authChange"));
-
     navigate("/");
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full z-50 flex justify-end items-center h-20 p-10 gap-40 bg-transparent">
-      <ul className="flex flex-row text-xl font-semibold ">
-        <li className="px-15">
-          <Link to="/">Home</Link>
-        </li>
-        <li className="px-15">
-          <Link to="/shop">Shop</Link>
-        </li>
-        <li className="px-15">
-          <a>About</a>
-        </li>
-        <li className="px-15">
-          <Link to="/contact">Contact</Link>
-        </li>
-      </ul>
-      <div className="flex flex-row gap-8 pr-5">
-        {isLoggedIn ? (
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 hover:opacity-70 transition"
-            title="Logout"
-          >
-            <LogoutOutlinedIcon sx={{ fontSize: 35 }} />
-          </button>
-        ) : (
-          <Link to="/registration">
-            <PersonOutlineOutlinedIcon sx={{ fontSize: 35 }} />
-          </Link>
-        )}
-        <SearchOutlinedIcon sx={{ fontSize: 35 }} />
-        <FavoriteBorderOutlinedIcon sx={{ fontSize: 35 }} />
-        <div
-          className="relative cursor-pointer"
-          onClick={() => setCartOpen(true)}
-        >
-          <ShoppingCartOutlinedIcon sx={{ fontSize: 35 }} />
-          {getCartCount() > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-              {getCartCount()}
-            </span>
+    <div className="fixed top-0 left-0 w-full py-2 z-50 bg-transparent">
+      <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4">
+        <div className="hidden w-20 h-20"></div>
+
+        <ul className="flex text-xl gap-10  font-semibold whitespace-nowrap">
+          <li>
+            <Link to="/">Home</Link>
+          </li>
+          <li>
+            <Link to="/shop">Shop</Link>
+          </li>
+          <li>
+            <a>About</a>
+          </li>
+          <li>
+            <Link to="/contact">Contact</Link>
+          </li>
+        </ul>
+
+        <div className="flex items-center gap-4 sm:gap-6">
+          {isLoggedIn ? (
+            <button onClick={handleLogout} title="Logout">
+              <LogoutOutlinedIcon sx={{ fontSize: 35 }} />
+            </button>
+          ) : (
+            <Link to="/registration">
+              <PersonOutlineOutlinedIcon sx={{ fontSize: 35 }} />
+            </Link>
           )}
+
+          <SearchOutlinedIcon sx={{ fontSize: 35 }} />
+          <FavoriteBorderOutlinedIcon sx={{ fontSize: 35 }} />
+
+          <div
+            className="relative cursor-pointer"
+            onClick={() => setCartOpen(true)}
+          >
+            <ShoppingCartOutlinedIcon sx={{ fontSize: 35 }} />
+            {getCartCount() > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {getCartCount()}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

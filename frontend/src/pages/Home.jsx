@@ -18,7 +18,7 @@ const Home = () => {
 
   return (
     <>
-      <div className="flex flex-row min-h-screen gap-40 bg-[#fbebb5] pt-20 justify-center items-center">
+      <div className="grid grid-cols-2 p-10 min-h-screen gap-40 bg-[#fbebb5] pt-20 place-items-center justify-items-center">
         <div className="flex flex-col gap-8">
           <h1 className="text-7xl font-bold tracking-wide">
             Rocket single <br />
@@ -31,7 +31,7 @@ const Home = () => {
             Shop now
           </Link>
         </div>
-        <img src={sofapng} alt="Sofa" className="w-auto h-screen mt-8" />
+        <img src={sofapng} alt="Sofa" className="w-180 h-auto mt-8" />
       </div>
 
       <div className="grid grid-cols-2 gap-40 p-40 bg-[#faf4f4]">
