@@ -20,7 +20,7 @@ const {
 } = require("./controller/blogController");
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://furniture-ecom-iota.vercel.app/"],
+  origin: ["http://localhost:5173", "https://furniture-ecom-iota.vercel.app"],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -50,8 +50,10 @@ app.get("/api/blogs/:id", getBlogById);
 app.put("/api/blogs/:id", updateBlogById);
 app.delete("/api/blogs/:id", deleteBlogById);
 
-app.listen(process.env.PORT, () => {
-  console.log(`server started on port ${process.env.PORT}`);
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`server started on port ${PORT}`);
   console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
   console.log("JWT_SECRET length:", process.env.JWT_SECRET?.length);
 });
